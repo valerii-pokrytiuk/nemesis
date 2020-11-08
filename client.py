@@ -6,8 +6,7 @@ import requests
 class Nemesis:
     BASE_API_URL = 'http://localhost:8000/'
 
-    def __init__(self, username, base_url=None):
-        self.token = username
+    def __init__(self, base_url=None):
         self.base_url = base_url or self.BASE_API_URL
 
     def enemies(self):
@@ -25,9 +24,11 @@ class Nemesis:
         )
 
     def transmit(self, enemy_id, answer):
-        print(json.loads(
-            requests.post(
-                self.BASE_API_URL + f'enemies/{enemy_id}/transmit/',
-                json={'transmission': answer},
-            ).text
-        ))
+        ret = requests.post(
+            self.BASE_API_URL + f'enemies/{enemy_id}/transmit/',
+            json={'transmission': answer},
+        )
+        try:
+            print(json.loads(ret.text))
+        except Exception:
+            print(ret)

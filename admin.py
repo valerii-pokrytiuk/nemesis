@@ -1,5 +1,7 @@
 import inspect
 import random
+from time import sleep
+
 import tasks
 
 from redis import Redis
@@ -31,6 +33,8 @@ for name, obj in inspect.getmembers(tasks):
 
 
 redis = Redis(host='localhost', port=6379, db=0, decode_responses=True)
+redis_listener = redis.pubsub(ignore_subscribe_messages=True)
+redis_listener.subscribe('game-commands')
 
 
 class ID:
@@ -42,14 +46,14 @@ class ID:
         return cls.id
 
 
-def spawn_wave(complexity):
-    for _ in range(5):
+def spawn_wave(complexity, enemies):
+    def _spawn_enemy():
         allowed_tasks = [task for task in TASKS_LIST if task.complexity <= complexity]
         task = random.choice(allowed_tasks)()
         enemy = {
             'id': ID.next(),
             'breed': random.choice(COMPLEXITY_TO_BREED[task.complexity]),
-            'type': type(task),
+            'type': type(task).__name__,
             'to_kill': task.task,
             'data': task.data,
             'nemesis': task.solution,
@@ -58,7 +62,22 @@ def spawn_wave(complexity):
         redis.set(f'enemy:{enemy["id"]}', enemy_encoded)
         redis.publish('game-commands', f'create {enemy["breed"]} 1')
 
+    # spawn
+    for _ in range(enemies):
+        _spawn_enemy()
+
+    # sustain
+    while True:
+        while message := redis_listener.get_message():
+            if 'kill' in message['data']:
+                _spawn_enemy()
+        sleep(1)
+
 
 def clear_enemies_db():
     for key in redis.scan_iter("enemy:*"):
         redis.delete(key)
+
+
+if __name__ == "__main__":
+    spawn_wave(0, 5)

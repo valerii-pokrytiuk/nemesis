@@ -5,7 +5,14 @@ from bottle import request, response, run
 from bottle import post, get, put, delete
 from redis import Redis
 
+from serializers import EnemySchema
+
 redis = Redis(host='localhost', port=6379, db=0, decode_responses=True)
+
+
+@get('/connect/')
+def connection_handler():
+    return 'Connection established'
 
 
 @get('/enemies/')
@@ -14,7 +21,7 @@ def enemies_list_handler():
     for key in redis.scan_iter("enemy:*"):
         enemies.append(json.loads(redis.get(key)))
     response.headers['Content-Type'] = 'application/json'
-    return json.dumps(enemies)
+    return EnemySchema(exclude=['nemesis'], many=True).dumps(enemies)
 
 
 @get('/enemies/<pk>/')
@@ -22,9 +29,11 @@ def enemies_detail_handler(pk):
     enemy = redis.get(f'enemy:{pk}')
     if enemy:
         response.headers['Content-Type'] = 'application/json'
-        return json.dumps(enemy)
-    response.status_code = 404
-    return
+        return EnemySchema(exclude=['nemesis']).dump(EnemySchema().loads(enemy))
+    # response.status_code = 404
+    return json.dumps({"message": "Not Found"})
+
+LOCKED_ENEMIES = []
 
 
 @post('/enemies/<pk>/transmit/')
@@ -33,20 +42,27 @@ def transmission_handler(pk):
     enemy = redis.get(f'enemy:{pk}')
 
     if not enemy:
-        response.status_code = 404
-        return
+        response.headers['Content-Type'] = 'application/json'
+        return json.dumps({"message": "Not Found"})
 
-    transmission = data.get('transmission')
     enemy = json.loads(enemy)
-    if transmission == enemy['nemesis']:
-        redis.publish('game-commands', f'kill {enemy["breed"]}')
-        redis.delete(f'enemy:{pk}')
-        ret = json.dumps({"message": "Success!"})
+    if enemy['id'] in LOCKED_ENEMIES:
+        ret = json.dumps({"message": "Locked!"})
+
     else:
-        ret = json.dumps({"message": "Failed!"})
+        LOCKED_ENEMIES.append(enemy['id'])
+        transmission = data.get('transmission')
+        if transmission == enemy['nemesis']:
+            redis.publish('game-commands', f'kill {enemy["breed"]}')
+            redis.delete(f'enemy:{pk}')
+            ret = json.dumps({"message": "Success!"})
+            sleep(3)
+        else:
+            ret = json.dumps({"message": "Failed!"})
+            sleep(5)
+        LOCKED_ENEMIES.pop(LOCKED_ENEMIES.index(enemy['id']))
 
     response.headers['Content-Type'] = 'application/json'
-    sleep(5)
     return ret
 
 
