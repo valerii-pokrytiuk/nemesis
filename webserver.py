@@ -12,7 +12,7 @@ redis = Redis(host='localhost', port=6379, db=0, decode_responses=True)
 
 @get('/connect/')
 def connection_handler():
-    return 'Connection established'
+    return "Успішно з'єднано з сервером"
 
 
 @get('/enemies/')
@@ -32,6 +32,7 @@ def enemies_detail_handler(pk):
         return EnemySchema(exclude=['nemesis']).dump(EnemySchema().loads(enemy))
     # response.status_code = 404
     return json.dumps({"message": "Not Found"})
+
 
 LOCKED_ENEMIES = []
 
