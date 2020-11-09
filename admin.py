@@ -53,7 +53,7 @@ def spawn_wave(complexity, players_number, enemies):
     while True:
         enemies = [EnemySchema().loads(redis.get(key)) for key in redis.scan_iter("enemy:*")]
         for color in PLAYER_COLORS[:players_number]:
-            if not filter(lambda enemy: enemy['color'] == color, enemies):
+            if not list(filter(lambda enemy: enemy['color'] == color, enemies)):
                 spawn_enemy(color, complexity)
         sleep(1)
 
@@ -89,3 +89,5 @@ for name, obj in inspect.getmembers(tasks):
     if inspect.isclass(obj) and issubclass(obj, tasks.Task) and name != 'Task':
         tasks_list.append(obj)
 
+if __name__ == '__main__':
+    spawn_wave(0, 1, 5)

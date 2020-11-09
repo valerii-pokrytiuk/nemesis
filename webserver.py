@@ -55,7 +55,7 @@ def kill_handler(pk):
     else:
         ret = json.dumps({"message": "Failed!"})
 
-    sleep(4)
+    sleep(3)
     response.headers['Content-Type'] = 'application/json'
     return ret
 

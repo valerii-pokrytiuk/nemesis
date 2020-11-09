@@ -301,8 +301,8 @@ pip-selfcheck.json
 .env
 
 ### Project template
-python_is_magic/media/
-
 .pytest_cache/
 
 .ipython/
+
+main.py
