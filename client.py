@@ -14,24 +14,17 @@ class Nemesis:
         url = f'{self.base_url}/enemies/'
         if only_my:
             url += f'?color={self.color}'
-        return json.loads(requests.get(url).text)
+        return requests.get(url).json()
 
     def scan_enemy(self, enemy_id):
-        return json.loads(
-            requests.get(
-                self.base_url + f'/enemies/{enemy_id}/',
-            ).text
-        )
+        return requests.get(self.base_url + f'/enemies/{enemy_id}/').json()
 
     def kill(self, enemy_id, answer):
-        ret = requests.post(
+        reponse = requests.post(
             self.base_url + f'/enemies/{enemy_id}/kill/',
             json={'nemesis': json.dumps(answer)},
         )
-        try:
-            print(json.loads(ret.text))
-        except Exception:
-            print(ret)
+        print(reponse.json())
             
     def connect(self):
         print(requests.get(self.base_url + f'/connect/').text)
