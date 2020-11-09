@@ -8,3 +8,4 @@ class EnemySchema(Schema):
     to_kill = fields.Str()
     data = fields.Str()
     nemesis = fields.Str()
+    color = fields.Str()

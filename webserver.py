@@ -12,14 +12,17 @@ redis = Redis(host='localhost', port=6379, db=0, decode_responses=True)
 
 @get('/connect/')
 def connection_handler():
-    return "Успішно з'єднано з сервером"
+    return "Connection successful"
 
 
 @get('/enemies/')
 def enemies_list_handler():
+    color = request.query.get('color')
     enemies = []
     for key in redis.scan_iter("enemy:*"):
-        enemies.append(json.loads(redis.get(key)))
+        enemy = json.loads(redis.get(key))
+        if not color or color == enemy['color']:
+            enemies.append(enemy)
     response.headers['Content-Type'] = 'application/json'
     return EnemySchema(exclude=['nemesis'], many=True).dumps(enemies)
 
@@ -34,11 +37,8 @@ def enemies_detail_handler(pk):
     return json.dumps({"message": "Not Found"})
 
 
-LOCKED_ENEMIES = []
-
-
-@post('/enemies/<pk>/transmit/')
-def transmission_handler(pk):
+@post('/enemies/<pk>/kill/')
+def kill_handler(pk):
     data = request.json
     enemy = redis.get(f'enemy:{pk}')
 
@@ -46,23 +46,14 @@ def transmission_handler(pk):
         response.headers['Content-Type'] = 'application/json'
         return json.dumps({"message": "Not Found"})
 
-    enemy = json.loads(enemy)
-    if enemy['id'] in LOCKED_ENEMIES:
-        ret = json.dumps({"message": "Locked!"})
-
+    enemy = EnemySchema().loads(enemy)
+    nemesis = data.get('nemesis')
+    if nemesis == enemy['nemesis']:
+        redis.publish('game-commands', f'kill {enemy["breed"]} {enemy["color"]}')
+        redis.delete(f'enemy:{pk}')
+        ret = json.dumps({"message": "Success!"})
     else:
-        LOCKED_ENEMIES.append(enemy['id'])
-        transmission = data.get('transmission')
-        if transmission == enemy['nemesis']:
-            redis.publish('game-commands', f'kill {enemy["breed"]}')
-            redis.delete(f'enemy:{pk}')
-            ret = json.dumps({"message": "Success!"})
-            sleep(3)
-        else:
-            ret = json.dumps({"message": "Failed!"})
-            sleep(5)
-        LOCKED_ENEMIES.pop(LOCKED_ENEMIES.index(enemy['id']))
-
+        ret = json.dumps({"message": "Failed!"})
     response.headers['Content-Type'] = 'application/json'
     return ret
 

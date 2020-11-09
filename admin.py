@@ -1,4 +1,5 @@
 import inspect
+import json
 import random
 from time import sleep
 
@@ -46,8 +47,14 @@ class ID:
         return cls.id
 
 
-def spawn_wave(complexity, enemies):
-    def _spawn_enemy():
+def spawn_wave(complexity, players_number, enemies):
+    player_colors = [
+        'red',
+        'green',
+        'blue',
+    ]
+
+    def _spawn_enemy(color):
         allowed_tasks = [task for task in TASKS_LIST if task.complexity <= complexity]
         task = random.choice(allowed_tasks)()
         enemy = {
@@ -56,28 +63,25 @@ def spawn_wave(complexity, enemies):
             'type': type(task).__name__,
             'to_kill': task.task,
             'data': task.data,
-            'nemesis': task.solution,
+            'nemesis': json.dumps(task.solution),
+            'color': color,
         }
         enemy_encoded = EnemySchema().dumps(enemy)
         redis.set(f'enemy:{enemy["id"]}', enemy_encoded)
-        redis.publish('game-commands', f'create {enemy["breed"]} 1')
+        redis.publish('game-commands', f'create {enemy["breed"]} {color}')
 
     # spawn
-    for _ in range(enemies):
-        _spawn_enemy()
+    for color in player_colors[:players_number]:
+        for _ in range(enemies):
+            _spawn_enemy(color)
 
     # sustain
-    while True:
-        while message := redis_listener.get_message():
-            if 'kill' in message['data']:
-                _spawn_enemy()
-        sleep(1)
+    # while True:
+    #
+    #                 _spawn_enemy()
+    #     sleep(1)
 
 
 def clear_enemies_db():
     for key in redis.scan_iter("enemy:*"):
         redis.delete(key)
-
-
-if __name__ == "__main__":
-    spawn_wave(0, 5)
