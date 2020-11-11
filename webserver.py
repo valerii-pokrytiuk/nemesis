@@ -12,7 +12,7 @@ redis = Redis(host='localhost', port=6379, db=0, decode_responses=True)
 
 @get('/connect/')
 def connection_handler():
-    return "Connection successful"
+    return "Connection established"
 
 
 @get('/enemies/')

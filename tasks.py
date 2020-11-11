@@ -70,6 +70,7 @@ class FindLetter(Task):
 
 class FindNumber(Task):
     task = 'Позиція цифри серед букв"'
+    complexity = 2
 
     def get_data(self):
         string = get_random_string(100)
@@ -77,8 +78,8 @@ class FindNumber(Task):
         return string[:position] + str(random.randint(0, 9)) + string[position:]
 
     def get_solution(self):
-        for i in range(self.data):
-            if self.data[i].isnumeric():
+        for i in self.data:
+            if self.data[i].is_digit():
                 return i
 
 
@@ -99,6 +100,7 @@ class FindNumber(Task):
 
 class SwapCases(Task):
     task = 'Регістри всіх літер змінені місцями.'
+    complexity = 2
 
     def get_data(self):
         return get_random_string(1000)
@@ -119,6 +121,7 @@ class AlphabeticOrder(Task):
 
 class ReverseString(Task):
     task = 'Дані в зворотньому порядку.'
+    complexity = 2
 
     def get_data(self):
         return get_random_string(100)
