@@ -10,13 +10,8 @@ from redis import Redis
 from serializers import EnemySchema
 
 
-PLAYER_COLORS = [
-    'red',
-    'green',
-    'blue',
-]
-
 ZERG_BREEDS = [
+    'Drone',
     'Zergling',
     # 'Baneling',
     'Roach',
@@ -27,10 +22,11 @@ ZERG_BREEDS = [
 ]
 
 COMPLEXITY_TO_BREED = {
-    0: ['Zergling'],
-    1: ['Roach'],
-    2: ['Hydralisk'],
-    3: ['Ravager']
+    0: ['Drone'],
+    1: ['Zergling'],
+    2: ['Roach'],
+    3: ['Hydralisk'],
+    4: ['Ravager']
 }
 
 
@@ -45,40 +41,37 @@ class ID:
 
 def spawn_wave(complexity, players_number, enemies):
     # Spawn starting enemies
-    for color in PLAYER_COLORS[:players_number]:
-        for _ in range(enemies):
-            spawn_enemy(color, complexity)
+    for _ in range(enemies):
+        spawn_enemy(complexity)
 
     # Sustain wave
     while True:
-        enemies = [EnemySchema().loads(redis.get(key)) for key in redis.scan_iter("enemy:*")]
-        for color in PLAYER_COLORS[:players_number]:
-            if not list(filter(lambda enemy: enemy['color'] == color, enemies)):
-                spawn_enemy(color, complexity)
+        enemies_keys = [key for key in redis.scan_iter("enemy:*")]
+        if len(enemies_keys) < players_number:
+            spawn_enemy(complexity)
         sleep(1)
 
 
-def spawn_enemy(color, complexity):
+def spawn_enemy(complexity):
     allowed_tasks = [task for task in tasks_list if task.complexity <= complexity]
     task = random.choice(allowed_tasks)()
     enemy = {
         'id': ID.next(),
         'breed': random.choice(COMPLEXITY_TO_BREED[task.complexity]),
         'type': type(task).__name__,
-        'to_kill': task.task,
+        'task': task.task,
         'data': task.data,
         'nemesis': json.dumps(task.solution),
-        'color': color,
     }
     enemy_encoded = EnemySchema().dumps(enemy)
     redis.set(f'enemy:{enemy["id"]}', enemy_encoded)
-    redis.publish('game-commands', f'create {enemy["breed"]} {color}')
+    redis.publish('game-commands', f'create {enemy["breed"]} {enemy["id"]}')
 
 
-def clear_enemies_db():
+def clear():
     for key in redis.scan_iter("enemy:*"):
         enemy = EnemySchema().loads(redis.get(key))
-        redis.publish('game-commands', f'kill {enemy["breed"]} {enemy["color"]}')
+        redis.publish('game-commands', f'kill {enemy["id"]}')
         redis.delete(key)
 
 

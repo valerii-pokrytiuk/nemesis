@@ -78,8 +78,8 @@ class FindNumber(Task):
         return string[:position] + str(random.randint(0, 9)) + string[position:]
 
     def get_solution(self):
-        for i in self.data:
-            if self.data[i].is_digit():
+        for i in range(len(self.data)):
+            if self.data[i].isdigit():
                 return i
 
 
