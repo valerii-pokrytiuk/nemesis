@@ -29,7 +29,7 @@ class Nemesis:
         print(response.json()['message'])
         return response
 
-    def run_autofire(self, type_to_handler_map: dict):
+    def autofire(self, type_to_handler_map: dict):
         run = True
         while run:
             enemy = self.select_enemy()

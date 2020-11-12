@@ -74,7 +74,7 @@ def kill_handler(pk):
     else:
         message = f"Failed to kill {enemy['type']}!"
 
-    sleep(2)
+    sleep(1)
     return {"message": message}
 
 
