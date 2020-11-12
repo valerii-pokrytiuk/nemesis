@@ -21,15 +21,48 @@ class Task:
         raise NotImplementedError
 
 
+class Constant(Task):
+    task = "Goodbye world"
+    complexity = 0
+
+    def get_data(self):
+        return get_random_string(100)
+
+    def get_solution(self):
+        return self.task
+
+
 class Echo(Task):
     task = "Дані, як вони є"
     complexity = 0
 
     def get_data(self):
-        return get_random_string(200)
+        return get_random_string(100)
 
     def get_solution(self):
         return self.data
+    
+
+class FirstLetter(Task):
+    task = "Перша буква"
+    complexity = 1
+
+    def get_data(self):
+        return get_random_string(100)
+
+    def get_solution(self):
+        return self.data[0]
+    
+
+class LastLetter(Task):
+    task = "Остання буква"
+    complexity = 1
+
+    def get_data(self):
+        return get_random_string(100)
+
+    def get_solution(self):
+        return self.data[-1]
 
 
 class CountLetters(Task):
@@ -44,7 +77,7 @@ class CountLetters(Task):
         return f'Кількість літер {self.seed}'
 
     def get_data(self):
-        return get_random_string(1000)
+        return get_random_string(200)
 
     def get_solution(self):
         return self.data.count(self.seed)

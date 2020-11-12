@@ -5,5 +5,6 @@ nemesis.connect()
 
 database = {
     'Echo': lambda x: x['data'],
+    'Constant': lambda x: 'Goodbye world',
 }
 nemesis.autofire(database)

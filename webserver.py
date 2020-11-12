@@ -36,7 +36,6 @@ def connection_handler(player):
 
 @post('/enemies/select/<player>/')
 def select_enemy_handler(player):
-    sleep(1)
     enemies = []
     for key in redis.scan_iter("enemy:*"):
         enemy = json.loads(redis.get(key))
@@ -48,11 +47,14 @@ def select_enemy_handler(player):
     else:
         not_selected = list(filter(lambda x: x['selected_by'] == "", enemies))
         if not_selected:
-            enemy = not_selected[0]
+            enemy = not_selected[-1]
             enemy['selected_by'] = player
             redis.set(f'enemy:{enemy["id"]}', json.dumps(enemy))
             redis.publish('game-commands', f'select {enemy["id"]} {player}')
+            sleep(1)
             return EnemySchema(exclude=['nemesis']).dumps(enemy)
+
+        sleep(1)
         return None
 
 
