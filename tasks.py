@@ -66,7 +66,7 @@ class LastLetter(Task):
 
 
 class CountLetters(Task):
-    complexity = 1
+    complexity = 2
 
     def __init__(self):
         self.seed = get_random_string(1).lower()
@@ -84,7 +84,7 @@ class CountLetters(Task):
 
 
 class FindLetter(Task):
-    complexity = 1
+    complexity = 2
 
     def __init__(self):
         self.seed = get_random_string(1)

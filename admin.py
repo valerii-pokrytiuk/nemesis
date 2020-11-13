@@ -49,7 +49,7 @@ def spawn_wave(complexity, players_number, enemies):
         enemies_keys = [key for key in redis.scan_iter("enemy:*")]
         if len(enemies_keys) < players_number:
             spawn_enemy(complexity)
-        sleep(2)
+        sleep(2.5)
 
 
 def spawn_enemy(complexity):
