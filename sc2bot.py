@@ -27,7 +27,7 @@ sc2process.SC2Process._connect = _connect
 
 class NemesisProjectBot(sc2.BotAI):
     async def on_start(self):
-        self.client.game_step = 10
+        self.client.game_step = 3
 
     async def on_step(self, iteration: int):
         while message := redis_listener.get_message():

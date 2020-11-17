@@ -21,19 +21,96 @@ class Task:
         raise NotImplementedError
 
 
+class GoodByeWorld(Task):
+    task = "Прислати \"Goodbye World\""
+    complexity = 0
+
+    def get_data(self):
+        return get_random_string(100)
+
+    def get_solution(self):
+        return "Goodbye World"
+
+
+class HelloWorld(Task):
+    task = "Прислати \"Hello World\""
+    complexity = 0
+
+    def get_data(self):
+        return get_random_string(100)
+
+    def get_solution(self):
+        return "Hello World"
+
+
 class Echo(Task):
     task = "Дані, як вони є"
     complexity = 0
 
     def get_data(self):
-        return get_random_string(200)
+        return get_random_string(100)
 
     def get_solution(self):
         return self.data
+    
+
+class FirstLetter(Task):
+    task = "Перша буква"
+    complexity = 1
+
+    def get_data(self):
+        return get_random_string(100)
+
+    def get_solution(self):
+        return self.data[0]
+    
+
+class LastLetter(Task):
+    task = "Остання буква"
+    complexity = 1
+
+    def get_data(self):
+        return get_random_string(100)
+
+    def get_solution(self):
+        return self.data[-1]
+
+
+class FirstTenLetters(Task):
+    task = "Перші 10 букв"
+    complexity = 1
+
+    def get_data(self):
+        return get_random_string(100)
+
+    def get_solution(self):
+        return self.data[:10]
+
+
+class LastTenLetters(Task):
+    task = "Останні 10 букв"
+    complexity = 1
+
+    def get_data(self):
+        return get_random_string(100)
+
+    def get_solution(self):
+        return self.data[-10:]
+
+
+class Slice10To20(Task):
+    task = "Букви від 10 по 20"
+    complexity = 1
+
+    def get_data(self):
+        return get_random_string(100)
+
+    def get_solution(self):
+        return self.data[10:20]
 
 
 class CountLetters(Task):
-    complexity = 1
+    complexity = 2
 
     def __init__(self):
         self.seed = get_random_string(1).lower()
@@ -44,14 +121,14 @@ class CountLetters(Task):
         return f'Кількість літер {self.seed}'
 
     def get_data(self):
-        return get_random_string(1000)
+        return get_random_string(200)
 
     def get_solution(self):
         return self.data.count(self.seed)
 
 
 class FindLetter(Task):
-    complexity = 1
+    complexity = 2
 
     def __init__(self):
         self.seed = get_random_string(1)
@@ -78,8 +155,8 @@ class FindNumber(Task):
         return string[:position] + str(random.randint(0, 9)) + string[position:]
 
     def get_solution(self):
-        for i in self.data:
-            if self.data[i].is_digit():
+        for i in range(len(self.data)):
+            if self.data[i].isdigit():
                 return i
 
 
