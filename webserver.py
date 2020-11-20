@@ -12,20 +12,12 @@ from serializers import EnemySchema
 redis = Redis(host='localhost', port=6379, db=0, decode_responses=True)
 
 
-def response_dict_to_json(handler):
-    def wrapper(*args, **kwargs):
-        ret = handler(*args, **kwargs)
-        return json.dumps(ret)
-    return wrapper
-
-
 @hook('after_request')
 def set_headers():
     response.headers['Content-Type'] = 'application/json'
 
 
 @get('/connect/<player>/')
-@response_dict_to_json
 def connection_handler(player):
     if player in constants.PLAYERS:
         message = f"Welcome to Nemesis, {player}!"
@@ -59,7 +51,6 @@ def select_enemy_handler(player):
 
 
 @post('/enemies/<pk>/kill/')
-@response_dict_to_json
 def kill_handler(pk):
     data = request.json
     enemy = redis.get(f'enemy:{pk}')
